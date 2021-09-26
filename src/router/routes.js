@@ -1,10 +1,9 @@
 const routes = [{
     path: '/',
     component: () => import('layouts/Menu.vue'),
-    children: [{
-      path: '',
-      component: () => import('pages/Index.vue')
-    }]
+  }, {
+    path: '/minesweeper-:difficulty',
+    component: () => import('layouts/Minesweeper.vue'),
   },
 
   // Always leave this as last one,
