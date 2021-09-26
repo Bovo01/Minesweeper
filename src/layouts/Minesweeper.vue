@@ -1,13 +1,17 @@
 <template>
   <div class="container">
-    <div v-for="j in difficulty.cols" :key="j" style="display:inline-block;line-height: 0;margin-top:0;">
-      <div v-for="i in difficulty.rows" :key="i">
-        <button v-if="!field[(i-1) * difficulty.rows + j-1].scoperto" class="button-grid coperto" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }" @click="scopri(i-1, j-1)" v-touch-hold.mouse="toggleFlag(i, j)"></button>
-        <button v-else-if="!field[(i-1) * difficulty.rows + j-1].mine" class="button-grid" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }">
-          {{ field[(i-1) * difficulty.rows + j-1].number == 0 ? "" : field[(i-1) * difficulty.rows + j-1].number }}
-        </button>
-        <button v-else-if="!field[(i-1) * difficulty.rows + j-1].flag" class="button-grid mine" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
-        <button v-else class="button-grid flag" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
+    <label>Mine rimanenti: {{ difficulty.mines - flagged }}</label>
+    <q-btn @click="flagMode = !flagMode">Flag: {{ flagMode ? "On" : "Off" }}</q-btn>
+    <div>
+      <div v-for="j in difficulty.cols" :key="j" style="display:inline-block;line-height: 0;margin-top:0;">
+        <div v-for="i in difficulty.rows" :key="i">
+          <button v-if="field[(i-1) * difficulty.rows + j-1].flag" class="button-grid flag" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
+          <button v-else-if="!field[(i-1) * difficulty.rows + j-1].scoperto" class="button-grid coperto" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }" @click="premi(i-1, j-1)"></button>
+          <button v-else-if="!field[(i-1) * difficulty.rows + j-1].mine" class="button-grid" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }">
+            {{ field[(i-1) * difficulty.rows + j-1].number == 0 ? "" : field[(i-1) * difficulty.rows + j-1].number }}
+          </button>
+          <button v-else class="button-grid mine" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -18,15 +22,18 @@ export default {
   data() {
     return {
       field: [],
-      difficulty: {rows: 0, cols: 0, mines: 0}
+      difficulty: {rows: 0, cols: 0, mines: 0},
+      flagMode: false,
+      flagged: 0
     }
   },
   methods: {
     toggleFlag(i, j) {
       let index = i * this.difficulty.cols + j;
       let elem = this.field[index];
-      if (!elem?.flag) return;
       elem.flag = !elem.flag;
+      if (elem.flag) this.flagged++;
+      else this.flagged--;
     },
     getNeighbors(i, j) {
       let neighbors = [];
@@ -37,6 +44,12 @@ export default {
         }
       }
       return neighbors;
+    },
+    premi(i, j) {
+      if (this.flagMode)
+        this.toggleFlag(i, j);
+      else
+        this.scopri(i, j);
     },
     scopri(i, j) {
       let index = i * this.difficulty.cols + j;

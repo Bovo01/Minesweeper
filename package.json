@@ -7,7 +7,11 @@
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
-    "start": "quasar dev"
+    "start": "quasar dev",
+    "build-android": "quasar build -m android",
+    "build-android-debug": "quasar build -m cordova -T android --debug",
+    "build-ios": "quasar build -m cordova -T ios",
+    "dev-android": "quasar dev -m cordova -T android"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
