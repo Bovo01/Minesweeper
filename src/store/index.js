@@ -1,5 +1,9 @@
-import { store } from 'quasar/wrappers'
-import { createStore } from 'vuex'
+import {
+  store
+} from 'quasar/wrappers'
+import {
+  createStore
+} from 'vuex'
 
 // import example from './module-example'
 
@@ -12,12 +16,38 @@ import { createStore } from 'vuex'
  * with the Store instance.
  */
 
-export default store(function (/* { ssrContext } */) {
+export default store(function ( /* { ssrContext } */ ) {
   const Store = createStore({
     modules: {
       // example
     },
-
+    state: {
+      DIFFICULTIES: [{
+        name: "Easy",
+        id: "0",
+        rows: 9,
+        cols: 9,
+        mines: 10
+      }, {
+        name: "Medium",
+        id: "1",
+        rows: 16,
+        cols: 16,
+        mines: 40
+      }, {
+        name: "Advanced",
+        id: "2",
+        rows: 30,
+        cols: 16,
+        mines: 99
+      }, {
+        name: "Expert",
+        id: "3",
+        rows: 30,
+        cols: 24,
+        mines: 180
+      }]
+    },
     // enable strict mode (adds overhead!)
     // for dev mode and --debug builds only
     strict: process.env.DEBUGGING

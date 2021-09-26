@@ -5,12 +5,13 @@
     <q-btn class="btn-center" outline rounded style="width: 25vw; " color="positive" label="Play">
       <q-menu>
         <q-list style="min-width: 100px">
-          <q-item clickable v-close-popup @click="play(0)">
+          <q-item v-for="difficulty in DIFFICULTIES" :key="difficulty.id" clickable v-close-popup @click="play(difficulty.id)">
             <q-item-section>
-              <q-item-label>Easy</q-item-label>
-              <q-item-label caption>9x9 10 mines</q-item-label>
+              <q-item-label>{{difficulty.name}}</q-item-label>
+              <q-item-label caption>{{difficulty.rows}}x{{difficulty.cols}} {{difficulty.mines}} mines</q-item-label>
             </q-item-section>
           </q-item>
+          <!--
           <q-item clickable v-close-popup @click="play(1)">
             <q-item-section>
               <q-item-label>Medium</q-item-label>
@@ -29,6 +30,7 @@
               <q-item-label caption>24x30 180 mines</q-item-label>
             </q-item-section>
           </q-item>
+          -->
         </q-list>
       </q-menu>
     </q-btn>
@@ -39,8 +41,16 @@
 export default {
   methods: {
     play(difficulty) {
-      this.$router.push()
+      this.$router.push(`/minesweeper-${difficulty}`)
     }
+  },
+  computed: {
+    DIFFICULTIES: function() {
+      return this.$store.state.DIFFICULTIES
+    }
+  },
+  mounted() {
+    console.log(this.$store.state.DIFFICULTIES)
   }
 }
 </script>

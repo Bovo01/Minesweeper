@@ -2,7 +2,7 @@ const routes = [{
     path: '/',
     component: () => import('layouts/Menu.vue'),
   }, {
-    path: '/minesweeper-:difficulty',
+    path: '/minesweeper-:difficultyId',
     component: () => import('layouts/Minesweeper.vue'),
   },
 
