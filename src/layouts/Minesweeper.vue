@@ -1,16 +1,18 @@
 <template>
   <div class="container">
-    <label>Mine rimanenti: {{ difficulty.mines - flagged }}</label>
-    <q-btn @click="flagMode = !flagMode">Flag: {{ flagMode ? "On" : "Off" }}</q-btn>
-    <div>
-      <div v-for="j in difficulty.cols" :key="j" style="display:inline-block;line-height: 0;margin-top:0;">
-        <div v-for="i in difficulty.rows" :key="i">
-          <button v-if="field[(i-1) * difficulty.rows + j-1].flag" class="button-grid flag" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
-          <button v-else-if="!field[(i-1) * difficulty.rows + j-1].scoperto" class="button-grid coperto" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }" @click="premi(i-1, j-1)"></button>
-          <button v-else-if="!field[(i-1) * difficulty.rows + j-1].mine" class="button-grid" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }">
-            {{ field[(i-1) * difficulty.rows + j-1].number == 0 ? "" : field[(i-1) * difficulty.rows + j-1].number }}
+    <div class="header">
+      <label>Mine rimanenti: {{ difficulty.mines - flagged }}</label>
+      <q-btn @click="flagMode = !flagMode">Flag: {{ flagMode ? "On" : "Off" }}</q-btn>
+    </div>
+    <div align="center">
+      <div class="field" id="field">
+        <div v-for="index in (difficulty.cols * difficulty.rows)" :key="index">
+          <button v-if="field[index - 1].flag" class="button-grid flag" @click="premi(index - 1)"></button>
+          <button v-else-if="!field[index - 1].scoperto" class="button-grid coperto" @click="premi(index - 1)"></button>
+          <button v-else-if="!field[index - 1].mine" class="button-grid">
+            {{ field[index - 1].number == 0 ? "" : field[index - 1].number }}
           </button>
-          <button v-else class="button-grid mine" :style="{ width: `${80/difficulty.cols}vw`, height: `${80/difficulty.cols}vw` }"></button>
+          <button v-else class="button-grid mine"></button>
         </div>
       </div>
     </div>
@@ -28,37 +30,36 @@ export default {
     }
   },
   methods: {
-    toggleFlag(i, j) {
-      let index = i * this.difficulty.cols + j;
+    toggleFlag(index) {
       let elem = this.field[index];
       elem.flag = !elem.flag;
       if (elem.flag) this.flagged++;
       else this.flagged--;
     },
-    getNeighbors(i, j) {
+    getNeighbors(index) {
+      const i = parseInt(index / this.difficulty.cols), j = index % this.difficulty.cols;
       let neighbors = [];
       for (let a = -1; a <= 1; a++) {
         for (let b = -1; b <= 1; b++) {
-          if (i + a < 0 || j + b < 0 || i + a >= this.difficulty.rows || j + b >= this.difficulty.cols) continue;
-          neighbors.push({i: i + a, j: j + b});
+          if ((i + a) < 0 || (j + b) < 0 || (i + a) >= this.difficulty.rows || (j + b) >= this.difficulty.cols) continue;
+          neighbors.push((i + a) * this.difficulty.cols + (j + b));
         }
       }
       return neighbors;
     },
-    premi(i, j) {
+    premi(index) {
       if (this.flagMode)
-        this.toggleFlag(i, j);
+        this.toggleFlag(index);
       else
-        this.scopri(i, j);
+        this.scopri(index);
     },
-    scopri(i, j) {
-      let index = i * this.difficulty.cols + j;
+    scopri(index) {
       let elem = this.field[index];
       if (elem.scoperto || elem.flag) return;
       elem.scoperto = true;
       if (elem.number == 0) {
-        for (let elem of this.getNeighbors(i, j)) {
-          this.scopri(elem.i, elem.j);
+        for (let ind of this.getNeighbors(index)) {
+          this.scopri(ind);
         }
       }
     }
@@ -66,6 +67,7 @@ export default {
   created() {
     const self = this;
     let difficulty = this.$store.state.DIFFICULTIES.filter(dif => dif.id == self.$route.params.difficultyId)[0];
+    console.log(difficulty)
     this.difficulty = difficulty;
     let mines = difficulty.mines;
 
@@ -84,18 +86,10 @@ export default {
     tempField.sort(() => (Math.random() > .5) ? 1 : -1);
 
     // Imposto numeri in base alle mine
-    for (let i = 0; i < difficulty.rows; i++) {
-      for (let j = 0; j < difficulty.cols; j++) {
-        let index = i * difficulty.cols + j;
-        if (tempField[index].mine) continue;
-        let num = 0;
-        for (let elem of this.getNeighbors(i, j)) {
-          let ind = elem.i * difficulty.cols + elem.j;
-          if (tempField[ind].mine)
-            num++;
-        }
-        tempField[index].number = num;
-      }
+    for (let index = 0; index < (difficulty.rows * difficulty.cols); index++) {
+      if (tempField[index].mine) continue;
+      const num = this.getNeighbors(index).filter(ind => tempField[ind].mine).length;
+      tempField[index].number = num;
     }
 
     this.field = tempField;
@@ -104,20 +98,52 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 1vh;
+}
+.field {
+  --cols: v-bind(difficulty.cols);
+  --rows: v-bind(difficulty.rows);
+  --field-dim: min(80vh, 80vw);
+
+  font-size: calc(18em / var(--cols));
+  width: var(--field-dim);
+  height: calc(var(--field-dim) * var(--rows) / var(--cols));
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  gap: 0;
+  vertical-align: middle;
+}
 .coperto {
   background-color: rgb(216, 216, 216);
 }
 .button-grid {
   border-radius: 0;
   border: 1px solid rgba(75, 75, 75, 0.26);
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
 }
-.button-grid.coperto:hover {
+.button-grid.coperto:hover, .button-grid.flag:hover {
   background-color: rgb(168, 168, 168);
 }
 .mine {
   background-color: red;
+  background-image: url("../assets/images/mine.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .flag {
-  background-color: lime;
+  background-color: rgb(216, 216, 216);
+  background-image: url("../assets/images/flag.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 </style>
